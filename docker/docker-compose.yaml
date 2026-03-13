@@ -1,0 +1,18 @@
+services:
+  backend:
+    container_name: battleship-backend
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: app
+    ports:
+      - "3000:1337"
+    restart: unless-stopped
+  db:
+    container_name: battleship-db
+    image: postgres
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: battleshipDEV
+    restart: unless-stopped

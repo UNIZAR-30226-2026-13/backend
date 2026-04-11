@@ -1,10 +1,9 @@
 const { Pool } = require('pg')
+const { DB_HOST, DB_PORT } = require('./config.js')
+
 const pool = new Pool({
-	host: 'db', //	Estos parametros son para desarrollo local
-	port: 5432,	//	TODO:Usar .env para entorno de producción
-	user: 'devuser',
-	password: 'devpass',
-	database: 'battleshipDEV'
-})
+	host: DB_HOST,
+	port: DB_PORT
+});
 
 module.exports = pool

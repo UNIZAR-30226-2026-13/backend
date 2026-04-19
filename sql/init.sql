@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS usuarios (
 	id uuid UNIQUE PRIMARY KEY,
 	username VARCHAR(255) NOT NULL UNIQUE,
+	email VARCHAR(255) NOT NULL UNIQUE,
 	password VARCHAR(255) NOT NULL,
 	barco TEXT NOT NULL DEFAULT 'default',
 	tablero TEXT NOT NULL DEFAULT 'default',

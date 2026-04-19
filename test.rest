@@ -1,5 +1,61 @@
-###
-GET http://localhost:3000
+@url = http://localhost:3000
+@api = {{url}}/api/usuario
+@token = auth=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI2ZmU2ZTI3LTM3NWQtNGRhMi05MDQ2LTA3MzBkNjEyMmIwMCIsInVzZXJuYW1lIjoiZXhhbXBsZVVzZXIiLCJlbWFpbCI6ImV4YW1wbGVAZXhhbXBsZS5jb20iLCJiYXJjbyI6ImRlZmF1bHQiLCJ0YWJsZXJvIjoiZGVmYXVsdCIsImVsbyI6MTAwMCwicGFydGlkYXNfanVnYWRhcyI6MCwicGFydGlkYXNfZ2FuYWRhcyI6MCwiaWF0IjoxNzc2NjM3NzA2LCJleHAiOjE3NzY2NDEzMDZ9.ahiV5QlhjC2oc3_k8q731FtDTbVEm5BW8NIrK7Ls6gU; Max-Age=3600; Path=/; Expires=Sun, 19 Apr 2026 23:28:26 GMT; HttpOnly; Secure; SameSite=None
+
 
 ###
-GET http://localhost:3000/db-setup
+GET {{url}}
+
+
+### Comprobar contenido base de datos
+GET {{url}}/db-setup
+
+
+
+### RESGISTER
+POST {{api}}/registro
+Content-Type: application/json
+
+{
+	"username": "exampleUser",
+	"email": "example@example.com",
+	"password": "examplePassword"
+}
+
+### LOGIN
+POST {{api}}/login
+Content-Type: application/json
+
+{
+	"username": "exampleUser",
+	"password": "examplePassword"
+}
+
+### WRONG LOGIN
+POST {{api}}/login
+Content-Type: application/json
+
+{
+	"username": "exampleUser",
+	"password": "wrongPassword"
+}
+
+### PUBLIC USER PROFILE
+GET {{api}}/exampleUser
+Content-Type: application/json
+Cookie: {{token}}
+
+### USER CONFIG
+PUT {{api}}/configuracion
+Content-Type: application/json
+Cookie: {{token}}
+
+{
+	"newData": {
+		"id": "exampleUser",
+		"username": "updatedUser",
+		"email": "updated@example.com",
+		"password": "updatedPassword"
+	}
+}
+

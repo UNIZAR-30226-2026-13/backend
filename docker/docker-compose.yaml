@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
   db:
     container_name: battleship-db
-    image: postgres
+    image: postgres:16
     env_file: ../.env
     environment:
       POSTGRES_USER: ${DB_USER}

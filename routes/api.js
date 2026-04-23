@@ -4,5 +4,6 @@ module.exports = {
 	LOGIN_ROUTE: '/login',
 	LOGOUT_ROUTE: '/logout',
 	USER_CONFIG_ROUTE: '/configuracion',
-	USER_ROUTE: '/usuario'
+	USER_ROUTE: '/usuario',
+	ACTIVE_GAME_ROUTE: '/partida'
 }

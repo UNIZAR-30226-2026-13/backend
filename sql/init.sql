@@ -30,6 +30,6 @@ CREATE TABLE IF NOT EXISTS historial_partidas (
 );
 
 CREATE TABLE IF NOT EXISTS queue (
-    player_id VARCHAR(255) PRIMARY KEY,
+    player_username VARCHAR(255) PRIMARY KEY,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

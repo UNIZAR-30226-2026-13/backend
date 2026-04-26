@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 CREATE TABLE IF NOT EXISTS partidas (
 	id TEXT PRIMARY KEY NOT NULL,
 	estado JSONB,
-	onwer_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	owner_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
 	guest_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
 	ranked BOOLEAN NOT NULL DEFAULT FALSE,
 	fecha_ultimo_movimiento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -30,6 +30,6 @@ CREATE TABLE IF NOT EXISTS historial_partidas (
 );
 
 CREATE TABLE IF NOT EXISTS queue (
-    player_username VARCHAR(255) PRIMARY KEY,
+    player_username VARCHAR(255) PRIMARY KEY REFERENCES usuarios(username) ON DELETE CASCADE, --- player_username VARCHAR(255) PRIMARY KEY,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

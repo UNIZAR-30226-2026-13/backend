@@ -9,9 +9,9 @@ class QueueRepository {
 
     // Buscar si hay alguien esperando (que no sea el propio jugador)
     static async getWaitingPlayer(playerID) {
-        const query = 'SELECT player_id FROM queue WHERE player_username != $1 LIMIT 1';
+        const query = 'SELECT player_username FROM queue WHERE player_username != $1 LIMIT 1';
         const result = await pool.query(query, [playerID]);
-        return result.rows[0]?.player_id;
+        return result.rows[0]?.player_username;
     }
 
     // Eliminar jugador de la cola (cuando encuentra partida o cancela)
@@ -28,4 +28,4 @@ class QueueRepository {
     }
 }
 
-module.exports = new QueueRepository();
+module.exports = QueueRepository;

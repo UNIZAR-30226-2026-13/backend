@@ -12,5 +12,8 @@ class Game {
 			ownerTurn : true,
 			gameSettings : gameSettings
 		}
+		return gameState;
 	}
 }
+
+module.exports = Game;

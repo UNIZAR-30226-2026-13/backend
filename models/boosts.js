@@ -16,3 +16,5 @@ class Boosts {
 		return resultBoard
 	}
 }
+
+module.exports = Boosts;

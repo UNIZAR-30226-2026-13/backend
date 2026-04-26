@@ -5,7 +5,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       target: app
-    env_file: ../.env
+    env_file: 
+      - ../.env
+      - ../.env.game
     environment:
       - DB_HOST=db
     ports:

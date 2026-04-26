@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const UsersRepository = require('../repositories/usersRepository')
 const { authenticateToken } = require('../middleware/auth')
-const { USER_CONFIG_ROUTE } = require('./api.js')
+const { USER_CONFIG_ROUTE } = require('./api')
 
 router.use(authenticateToken)
 

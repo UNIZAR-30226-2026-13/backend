@@ -6,6 +6,7 @@ const { API_ROUTE, USER_ROUTE } = require('./routes/api.js')
 const authRoutes = require('./routes/auth')
 const usersRoutes = require('./routes/users')
 const queueRoutes = require('./routes/queue')
+const historyRoutes = require('./routes/history')
 const app = express()
 
 const http = require('http') // Necesario para Socket.io
@@ -29,6 +30,7 @@ app.use(cookieParser())
 app.use(API_ROUTE+USER_ROUTE, authRoutes)
 app.use(API_ROUTE+USER_ROUTE, usersRoutes)
 app.use('/api/queue', queueRoutes)
+app.use(API_ROUTE + '/terminadas', historyRoutes)
 
 app.get('/', (req, res) => {
 	res.status(200).send('Hunde la flota Backend API running')

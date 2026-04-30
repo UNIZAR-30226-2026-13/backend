@@ -4,9 +4,9 @@ const crypto = require('crypto')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
 const { JWT_SECRET, SECURE_COOKIES } = require('../config.js')
-const { LOGIN_ROUTE, REGISTER_ROUTE, LOGOUT_ROUTE } = require('./api.js')
+const { AUTH_LOGIN_ROUTE, AUTH_REGISTER_ROUTE, AUTH_LOGOUT_ROUTE } = require('./api.js')
 
-router.post(REGISTER_ROUTE, async (req, res) => {
+router.post(AUTH_REGISTER_ROUTE, async (req, res) => {
 	const { username, email, password } = req.body
 	const newID = crypto.randomUUID()
 	try {
@@ -31,7 +31,7 @@ router.post(REGISTER_ROUTE, async (req, res) => {
 	}
 })
 
-router.post(LOGIN_ROUTE, async (req, res) => {
+router.post(AUTH_LOGIN_ROUTE, async (req, res) => {
 	const { username, password } = req.body
 	try {
 		const user = await UsersRepository.findUserByUsername(username)
@@ -59,7 +59,7 @@ router.post(LOGIN_ROUTE, async (req, res) => {
 	}
 })
 
-router.post(LOGOUT_ROUTE, (_, res) => {
+router.post(AUTH_LOGOUT_ROUTE, (_, res) => {
 	res.clearCookie('auth', {
 				httpOnly: true,
 				secure: SECURE_COOKIES ? true : false,

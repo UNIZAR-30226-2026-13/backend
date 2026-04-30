@@ -3,7 +3,7 @@ const { DEFAULT_GAME_SETTINGS } = require('../config')
 const Game = require('../models/game')
 
 class GamesRepository {
-	static async createGame(ownerUsername, guest_username, gameSettings) {
+	static async createGame(ownerUsername, guestUsername, gameSettings) {
 		if (gameSettings.ranked) {
 			gameSettings = DEFAULT_GAME_SETTINGS
 		}
@@ -13,7 +13,7 @@ class GamesRepository {
 		const gameState = Game.newGameState(gameSettings)
 
 		const query = 'INSERT INTO partidas (id, estado, owner_username, guest_username, ranked, activa) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *'
-		const values = [id, gameState, ownerUsername, guest_username, gameSettings.ranked, true]
+		const values = [id, gameState, ownerUsername, guestUsername, gameSettings.ranked, true]
 
 		try {
 			const result = await pool.query(query, values)
@@ -25,11 +25,16 @@ class GamesRepository {
 	}
 
 	static async addGuest(gameID, guestUsername) {
-		const query = 'UPDATE partidas SET guest_username = $1, activa = true WHERE id = $2'
-		const values = [guestUsername, id]
+		const query = 'UPDATE partidas SET guest_username = $1, activa = true WHERE id = $2 RETURNING owner_username'
+		const values = [guestUsername, gameID]
 		try {
 			const result = await pool.query(query, values)
-			return result.rowCount !== 0
+			if (result.rowCount !== 0) {
+				return result.rows[0].owner_username
+			}
+			else {
+				return null
+			}
 		} catch (error) {
 			console.error('Error en la base de datos: ', error)
 			throw error
@@ -57,8 +62,66 @@ class GamesRepository {
 				return result.rows[0].id
 			}
 			else {
-				return false
+				return null
 			}
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
+	static async findGameOwner(partidaID) {
+		const query = 'SELECT owner_username FROM partidas WHERE id = $1'
+		const values = [partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount !== 0) {
+				return result.rows[0].owner_username
+			}
+			else {
+				return null
+			}
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
+	static async getGameState(partidaID) {
+		const query = 'SELECT estado FROM partidas WHERE id = $1'
+		const values = [partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount === 0) return null
+			return result.rows[0].estado
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
+	static async getGame(partidaID) {
+		const query = 'SELECT * FROM partidas WHERE id = $1'
+		const values = [partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount === 0) return null
+			return result.rows[0]
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
+	static async updateGameState(partidaID, newGameState) {
+		const query = 'UPDATE partidas SET estado = $1 WHERE id = $2'
+		const values = [newGameState, partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount !== 0) {
+				return newGameState
+			}
+			return null
 		} catch (error) {
 			console.error('Error en la base de datos: ', error);
 			throw error

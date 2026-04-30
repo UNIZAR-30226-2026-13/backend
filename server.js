@@ -6,6 +6,7 @@ const { API_ROUTE, USER_ROUTE } = require('./routes/api.js')
 const authRoutes = require('./routes/auth')
 const usersRoutes = require('./routes/users')
 const queueRoutes = require('./routes/queue')
+const { authenticateSocket } = require('./middleware/auth')
 const app = express()
 
 const http = require('http') // Necesario para Socket.io
@@ -23,7 +24,7 @@ app.set('io', io)
 
 app.use(express.json())
 
-console.log("Ruta base montada en:", API_ROUTE + USER_ROUTE);
+console.log("Ruta base montada en:", API_ROUTE);
 
 app.use(cookieParser())
 app.use(API_ROUTE+USER_ROUTE, authRoutes)
@@ -47,13 +48,15 @@ app.get('/db-setup', async (req, res) => {
 	}
 })
 
+io.use(authenticateSocket)
+
 io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado:', socket.id);
+    console.log('Nuevo cliente conectado:', socket.data.user.username);
 
     // El cliente se une a una sala privada con su IDjugador para recibir notificaciones
-    socket.on('join_room', (playerID) => {
-        socket.join(playerID);
-        console.log(`Jugador ${playerID} unido a su sala privada`);
+    socket.on('join_room', () => {
+        socket.join(socket.data.user.username);
+        console.log(`Jugador ${socket.data.user.username} unido a su sala privada`);
     });
 
     socket.on('disconnect', () => {

@@ -15,4 +15,41 @@ class Boosts {
 		}
 		return resultBoard
 	}
+
+	static newInvetory() {
+		const inventory = {}
+		BOOST_NAMES.forEach((name) => inventory[name] = 0)
+		return inventory
+	}
+
+	static grabBoost(gameState, x, y) {
+		const resultGameState = structuredClone(gameState)
+		const grabbedBoost = null
+		if (resultGameState.ownerTurn) {
+			if (resultGameState.guestBoard[x][y] in resultGameState.ownerInventory) {
+				resultGameState.ownerInventory[resultGameState.guestBoard[x][y]]++
+				grabbedBoost = resultGameState.guestBoard[x][y]
+				resultGameState.guestBoard[x][y] = "nada"
+			}
+		}
+		else {
+			if (resultGameState.ownerBoard[x][y] in resultGameState.guestInventory) {
+				resultGameState.guestInventory[resultGameState.ownerBoard[x][y]]++
+				grabbedBoost = resultGameState.ownerBoard[x][y]
+				resultGameState.guestInventory[x][y] = "nada"
+			}
+		}
+		if (grabbedBoost != null) {
+			return resultGameState
+		}
+		return null
+	}
+
+	static applyBoost(gameState, requestedMove) {
+		// TODO: aplicar boost del requested move a gamestate
+		return null
+	}
 }
+
+exports = BOOST_NAMES
+exports = Boosts

@@ -2,11 +2,11 @@ const express = require('express')
 const router = express.Router()
 const UsersRepository = require('../repositories/usersRepository')
 const { authenticateToken } = require('../middleware/auth')
-const { USER_CONFIG_ROUTE } = require('./api')
+const { USER_CONFIG_ROUTE, USER_GET_USER_ROUTE } = require('./api')
 
 router.use(authenticateToken)
 
-router.get('/:username', async (req, res) => {
+router.get(USER_GET_USER_ROUTE, async (req, res) => {
 	const { username } = req.params
 	try {
 		const user = await UsersRepository.getPublicUser(username)

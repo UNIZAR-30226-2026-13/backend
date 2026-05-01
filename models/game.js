@@ -21,37 +21,46 @@ class Game {
 			typeof requestedMove.f !== 'number' ||
 			typeof requestedMove.c !== 'number' ||
 			typeof requestedMove.type !== 'string' ||
-			!["boost", "disparo"].includes(requestedMove.type) ||
-			typeof requestedMove.boostType !== 'string' ||
-			![...BOOST_NAMES, "None"].includes(requestedMove.boostType)
+			!["boost", "disparo"].includes(requestedMove.type)
 		) {
 			return null
 		}
-		const x = requestedMove.f
-		const y = requestedMove.c
-		if (x >= gameState.gameSettings.board_size || y >= gameState.gameSettings.board_size) {
+		if (
+			requestedMove.type === "boost" &&
+			(typeof requestedMove.boostType !== 'string' ||
+			![...BOOST_NAMES, "None"].includes(requestedMove.boostType))
+		) {
 			return null
 		}
-		const resultGameState = structuredClone(gameState)
 
-		if (requestedMove.type == "boost") {
+		const x = requestedMove.f
+		const y = requestedMove.c
+		if (x >= gameState.gameSettings.board_size || y >= gameState.gameSettings.board_size || x < 0 || y < 0) {
+			return null
+		}
+		let resultGameState = structuredClone(gameState)
+		let hitInfo = null
+
+		if (requestedMove.type === "boost") {
 			resultGameState = Boosts.applyBoost(resultGameState, requestedMove)
 			return resultGameState
 		}
 		else if (resultGameState.ownerTurn) {
-			const {board: shootResult, info: hitInfo} = Board.shoot(resultGameState.guestBoard, x, y)
-			resultGameState.guestBoard = shootResult
+			const result = Board.shoot(resultGameState.guestBoard, x, y)
+			hitInfo = result.info
+			resultGameState.guestBoard = result.board
 		}
 		else {
-			const {board: shootResult, info: hitInfo} = Board.shoot(resultGameState.ownerBoard, x, y)
-			resultGameState.ownerBoard = shootResult
+			const result = Board.shoot(resultGameState.ownerBoard, x, y)
+			hitInfo = result.info
+			resultGameState.ownerBoard = result.board
 		}
 
-		if (hitInfo == "boost") {
-			const resultGameState = Boosts.grabBoost(resultGameState, x, y)
+		if (hitInfo === "boost") {
+			resultGameState = Boosts.grabBoost(resultGameState, x, y)
 		}
 
-		if (hitInfo == "mina") {
+		if (hitInfo === "mina") {
 			 // Nos aseguramos de que se pierde el turno al activar una mina
 			resultGameState.turnStreak = -1
 		}
@@ -60,17 +69,24 @@ class Game {
 			resultGameState.ownerTurn = !resultGameState.ownerTurn
 			resultGameState.turnStreak = 1
 		}
-		if (hitInfo == "mina") {
+		if (hitInfo === "mina") {
 			// Al golpear mina le damos al siguiente jugador dos turnos
 			resultGameState.turnStreak = 2
 		}
+
+		return resultGameState
 	}
 
 	static cleanGameStateForPlayer(gameState, owner) {
-		//TODO
-		let cleanGameState = {}
-		if (owner) {
-			cleanGameState["tablero"]
+		const tablero = owner ? gameState.ownerBoard : gameState.guestBoard
+		const tableroRival = owner ? gameState.guestBoard : gameState.ownerBoard
+		const inventario = owner ? gameState.ownerInventory : gameState.guestInventory
+
+		return {
+			tablero: Board.hideForSelf(tablero),
+			inventario: {...inventario},
+			tableroRival: Board.hideForOpponent(tableroRival),
+			tuTurno: owner ? gameState.ownerTurn : !gameState.ownerTurn
 		}
 	}
 }

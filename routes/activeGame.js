@@ -73,6 +73,9 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 		if (gameState.ownerTurn && username !== game.owner_username || !gameState.ownerTurn && username !== game.guest_username) {
 			return res.status(409).json({message: "No es tu turno"})
 		}
+
+		const ownerMove = gameState.ownerTurn
+
 		const newGameState = Game.move(gameState, requestedMove)
 		if (!newGameState) {
 			return res.status(400).json({message: "Movimiento ilegal o mal formado"})
@@ -80,7 +83,21 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 
 		const finalGameState = await GamesRepository.updateGameState(gameID, newGameState)
 
-		//TODO: Limpiar tableros y estados y enviar respuesta + evento
+		if (io) {
+			const turnUsername = finalGameState.ownerTurn ? game.owner_username : game.guest_username
+			const otherPlayerUsername = finalGameState.ownerTurn ? game.guest_username : game.owner_username
+			io.to(turnUsername).emit(
+				'tu_turno',
+				Game.cleanStateForPlayer(finalGameState, finalGameState.ownerTurn)
+			)
+			io.to(otherPlayerUsername).emit(
+				'actualizar_tablero',
+				Game.cleanStateForPlayer(finalGameState, !finalGameState.ownerTurn)
+			)
+		}
+
+		return res.status(200).json(Game.cleanStateForPlayer(finalGameState, ownerMove))
+
 
 	} catch (error) {
 		return res.status(500).json({message: "Error en el servidor"})

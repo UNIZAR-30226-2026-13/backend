@@ -90,7 +90,7 @@ class GamesRepository {
 			const eloMayor = Math.max(user1.elo, user2.elo);
             const eloMenor = Math.min(user1.elo, user2.elo);
 
-            const diff = (eloMayor - eloMenor * 0.0033 * 15) + 15;
+            const diff = ((eloMayor - eloMenor) * 0.0033 * 15) + 15;
 
             let puntosGanados = 0;
             let puntosPerdidos = 0;
@@ -102,7 +102,7 @@ class GamesRepository {
                 // Ganó el de mayor ELO
 				let elo2 = 30 - diff
                 puntosGanados = Math.max(elo2 * 1.2, 3); // Mínimo 3 puntos
-                puntosPerdidos = Math.max(30 - diff, 3);
+                puntosPerdidos = Math.max(elo2, 3);
             }
 			
 			// Insertar en historial

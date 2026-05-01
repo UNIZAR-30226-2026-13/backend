@@ -28,11 +28,11 @@ class BoardModel {
 				hitInfo = "barco"
 				break
 			case "escudo(barco)":
-				newBoard[x][y] = "barco"
+				newBoard[x][y] = "escudoRoto(barco)"
 				hitInfo = "escudo"
 				break
 			case "escudo(agua)":
-				newBoard[x][y] = "agua"
+				newBoard[x][y] = "escudoRoto(agua)"
 				hitInfo = "escudo"
 				break
 			case "minaActiva":
@@ -94,6 +94,8 @@ class BoardModel {
 					case "hundido":
 					case "escudo(agua)":
 					case "escudo(barco)":
+					case "escudoRoto(agua)":
+					case "escudoRoto(barco)":
 					case "minaActiva":
 					case "minaDetonada":
 						break
@@ -114,6 +116,10 @@ class BoardModel {
 					case "tocado":
 					case "hundido":
 					case "minaDetonada":
+						break
+					case "escudoRoto(agua)":
+					case "escudoRoto(barco)":
+						hiddenBoard[x][y] = "escudoRoto"
 						break
 					default:
 						hiddenBoard[x][y] = "agua"

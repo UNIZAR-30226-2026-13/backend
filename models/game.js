@@ -28,7 +28,7 @@ class Game {
 		if (
 			requestedMove.type === "boost" &&
 			(typeof requestedMove.boostType !== 'string' ||
-			![...BOOST_NAMES, "None"].includes(requestedMove.boostType))
+			![...BOOST_NAMES].includes(requestedMove.boostType))
 		) {
 			return null
 		}
@@ -48,12 +48,12 @@ class Game {
 		else if (resultGameState.ownerTurn) {
 			const result = Board.shoot(resultGameState.guestBoard, x, y)
 			hitInfo = result.info
-			resultGameState.guestBoard = result.board
+			resultGameState.guestBoard = Board.checkForSunk(result.board, x, y)
 		}
 		else {
 			const result = Board.shoot(resultGameState.ownerBoard, x, y)
 			hitInfo = result.info
-			resultGameState.ownerBoard = result.board
+			resultGameState.ownerBoard = Board.checkForSunk(result.board, x, y)
 		}
 
 		if (hitInfo === "boost") {

@@ -71,8 +71,11 @@ class UsersRepository {
 		const id = user.id
 
 		const updatedUser = { ...user, ...newData }
-		const query = 'UPDATE usuarios SET username = $1, email = $2, password = $3 WHERE id = $4'
-		const values = [updatedUser.username, updatedUser.email, updatedUser.password, id]
+		const query = `
+			UPDATE usuarios 
+			SET username = $1, email = $2, password = $3, barco = $4, perfil = $5 
+			WHERE id = $6`;
+		const values = [updatedUser.username,updatedUser.email,updatedUser.password,updatedUser.barco,updatedUser.perfil,id];
 		try {
 			const result = await pool.query(query, values)
 			if (result.rowCount !== 0) {

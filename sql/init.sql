@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 	email VARCHAR(255) NOT NULL UNIQUE,
 	password VARCHAR(255) NOT NULL,
 	barco TEXT NOT NULL DEFAULT 'default',
+	perfil TEXT NOT NULL DEFAULT 'default',
 	tablero TEXT NOT NULL DEFAULT 'default',
 	elo INTEGER NOT NULL DEFAULT 1000,
 	partidas_jugadas INTEGER NOT NULL CHECK (partidas_jugadas >= 0) DEFAULT 0,

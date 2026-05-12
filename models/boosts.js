@@ -2,7 +2,7 @@ const { BOOST_NAMES } = require('../config')
 
 class Boosts {
 	static placeBoosts(board, ratio) {
-		let resultBoard = board
+		let resultBoard = structuredClone(board)
 		const size = resultBoard.length
 		const numBoosts = Math.floor(size * size * ratio)
 		for (let i = 0; i < numBoosts;) {
@@ -16,7 +16,7 @@ class Boosts {
 		return resultBoard
 	}
 
-	static newInvetory() {
+	static newInventory() {
 		const inventory = {}
 		BOOST_NAMES.forEach((name) => inventory[name] = 0)
 		return inventory
@@ -24,7 +24,7 @@ class Boosts {
 
 	static grabBoost(gameState, x, y) {
 		const resultGameState = structuredClone(gameState)
-		const grabbedBoost = null
+		let grabbedBoost = null
 		if (resultGameState.ownerTurn) {
 			if (resultGameState.guestBoard[x][y] in resultGameState.ownerInventory) {
 				resultGameState.ownerInventory[resultGameState.guestBoard[x][y]]++
@@ -36,10 +36,10 @@ class Boosts {
 			if (resultGameState.ownerBoard[x][y] in resultGameState.guestInventory) {
 				resultGameState.guestInventory[resultGameState.ownerBoard[x][y]]++
 				grabbedBoost = resultGameState.ownerBoard[x][y]
-				resultGameState.guestInventory[x][y] = "nada"
+				resultGameState.ownerBoard[x][y] = "nada"
 			}
 		}
-		if (grabbedBoost != null) {
+		if (grabbedBoost !== null) {
 			return resultGameState
 		}
 		return null
@@ -51,5 +51,6 @@ class Boosts {
 	}
 }
 
-exports = BOOST_NAMES
-exports = Boosts
+module.exports = {
+	Boosts, BOOST_NAMES
+}

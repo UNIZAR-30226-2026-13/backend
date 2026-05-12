@@ -77,7 +77,7 @@ class Game {
 		return resultGameState
 	}
 
-	static cleanGameStateForPlayer(gameState, owner) {
+	static cleanStateForPlayer(gameState, owner) {
 		const tablero = owner ? gameState.ownerBoard : gameState.guestBoard
 		const tableroRival = owner ? gameState.guestBoard : gameState.ownerBoard
 		const inventario = owner ? gameState.ownerInventory : gameState.guestInventory
@@ -88,5 +88,69 @@ class Game {
 			tableroRival: Board.hideForOpponent(tableroRival),
 			tuTurno: owner ? gameState.ownerTurn : !gameState.ownerTurn
 		}
+	}
+
+	static placeBoats(gameState, boats, isOwner){
+		const resultGameState = structuredClone(gameState)
+		const targetBoard = isOwner ? resultGameState.ownerBoard : resultGameState.guestBoard
+		const targetInventory = isOwner ? resultGameState.ownerInventory : resultGameState.guestInventory
+		const expectedBoats = [
+			gameState.gameSettings.two_count,
+			gameState.gameSettings.three_count,
+			gameState.gameSettings.four_count,
+			gameState.gameSettings.five_count
+		]
+
+		for (const boat of boats) {
+			if (boat.size < 2 || boat.size > 5 || expectedBoats[boat.size-2] <= 0) {
+				return null
+			}
+			expectedBoats[boat.size-2]--
+			if (
+				boat.f < 0 ||
+				boat.c < 0 ||
+				boat.f >= targetBoard.length ||
+				boat.c >= targetBoard[0].length
+			) {
+				return null
+			}
+			if (boat.orientacion === "H") {
+				if (boat.c < 0 || boat.c+boat.size > targetBoard[boat.f].length) {
+					return null // Out of bounds
+				}
+				for (let i = 0; i < boat.size; i++) {
+					if (targetBoard[boat.f][boat.c + i] === "barco") {
+						return null
+					}
+					if (BOOST_NAMES.includes(targetBoard[boat.f][boat.c + i])) {
+						targetInventory[targetBoard[boat.f][boat.c + i]]++
+					}
+					targetBoard[boat.f][boat.c + i] = "barco"
+				}
+			}
+			else if (boat.orientacion === "V") {
+				if (boat.f < 0 || boat.f+boat.size > targetBoard.length) {
+					return null // Out of bounds
+				}
+				for (let i = 0; i < boat.size; i++) {
+					if (targetBoard[boat.f + i][boat.c] === "barco") {
+						return null // Solapamiento de barcos
+					}
+					if (BOOST_NAMES.includes(targetBoard[boat.f + i][boat.c])) {
+						targetInventory[targetBoard[boat.f + i][boat.c]]++
+					}
+					targetBoard[boat.f + i][boat.c] = "barco"
+				}
+			}
+			else {
+				return null
+			}
+		}
+		for (const rB of expectedBoats) {
+			if (rB !== 0) {
+				return null
+			}
+		}
+		return resultGameState
 	}
 }

@@ -15,8 +15,8 @@ class BoardModel {
 	}
 
 	static shoot(board, x, y) {
-		const newBoard = board.map(row => [...row])
-		const hitInfo = null
+		let newBoard = board.map(row => [...row])
+		let hitInfo = null
 		switch (newBoard[x][y]) {
 			case "agua":
 				newBoard[x][y] = "nada"
@@ -130,4 +130,4 @@ class BoardModel {
 	}
 }
 
-module.exports = BoardModel;
+module.exports = { Board: BoardModel };

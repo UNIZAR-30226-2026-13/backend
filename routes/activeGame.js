@@ -2,12 +2,12 @@ const express = require('express')
 const gameRouter = express.Router()
 const { DEFAULT_GAME_SETTINGS } = require('../config')
 const GamesRepository = require('../repositories/gamesRepository')
-const { authenthicateToken } = require('../middleware/auth')
+const { authenticateToken } = require('../middleware/auth')
 const Game = require('../models/game')
 const { GAME_CREATE_ROUTE, GAME_JOIN_ROUTE, GAME_MOVE_ROUTE } = require('./api')
 
 
-gameRouter.use(authenthicateToken)
+gameRouter.use(authenticateToken)
 
 gameRouter.post(GAME_CREATE_ROUTE, async (req, res) => {
 	const { username } = req.user.username
@@ -60,7 +60,7 @@ gameRouter.post(GAME_JOIN_ROUTE, async (req, res) => {
 	}
 })
 
-gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
+gameRouter.post(GAME_MOVE_ROUTE, async (req, res) => {
 	const username = req.user.username
 	const gameID = req.params.gameID
 	const requestedMove = req.body
@@ -89,18 +89,20 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 			const otherPlayerUsername = finalGameState.ownerTurn ? game.guest_username : game.owner_username
 			io.to(turnUsername).emit(
 				'tu_turno',
-				Game.cleanStateForPlayer(finalGameState, finalGameState.ownerTurn)
+				Game.cleanGameStateForPlayer(finalGameState, finalGameState.ownerTurn)
 			)
 			io.to(otherPlayerUsername).emit(
 				'actualizar_tablero',
-				Game.cleanStateForPlayer(finalGameState, !finalGameState.ownerTurn)
+				Game.cleanGameStateForPlayer(finalGameState, !finalGameState.ownerTurn)
 			)
 		}
 
-		return res.status(200).json(Game.cleanStateForPlayer(finalGameState, ownerMove))
+		return res.status(200).json(Game.cleanGameStateForPlayer(finalGameState, ownerMove))
 
 
 	} catch (error) {
 		return res.status(500).json({message: "Error en el servidor"})
 	}
 })
+
+module.exports = gameRouter;

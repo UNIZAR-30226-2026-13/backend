@@ -1,4 +1,4 @@
-const Board = require('./board')
+const { Board } = require('./board')
 const { Boosts, BOOST_NAMES } = require('./boosts')
 
 class Game {

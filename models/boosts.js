@@ -3,7 +3,7 @@ const { Board } = require('./board');
 
 class Boosts {
 	static placeBoosts(board, ratio) {
-		let resultBoard = board
+		let resultBoard = structuredClone(board)
 		const size = resultBoard.length
 		const numBoosts = Math.floor(size * size * ratio)
 		for (let i = 0; i < numBoosts;) {
@@ -160,7 +160,7 @@ class Boosts {
 		if (shooterInventory['doble'] <= 0) return resultGameState;
 		shooterInventory['doble']--;
 
-		resultGameState.turnStreak = 2; 
+		resultGameState.turnStreak = 2;
 		return resultGameState; // Sigue siendo su turno
 	}
 

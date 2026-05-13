@@ -76,12 +76,41 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 
 		const ownerMove = gameState.ownerTurn
 
-		const newGameState = Game.move(gameState, requestedMove)
-		if (!newGameState) {
+		const moveResult = Game.move(gameState, requestedMove)
+		if (!moveResult) {
 			return res.status(400).json({message: "Movimiento ilegal o mal formado"})
 		}
 
+		const newGameState = moveResult.gameState
+
 		const finalGameState = await GamesRepository.updateGameState(gameID, newGameState)
+
+		if (moveResult.winner !== null) {
+			//PARTIDA TERMINADA
+			const ganadorUsername = winner ? game.owner_username : game.guest_username
+			const perdedorUsername = (!winner) ? game.owner_username : game.guest_username
+			const result = await GamesRepository.consolidarPartida(gameID, ganadorUsername)
+			if(io) {
+				io.to(ganadorUsername).emit(
+					'partida_finalizada',
+					{
+						ganador: ganadorUsername,
+						elo: result.ganados,
+						estadoFinal: Game.cleanGameStateForPlayer(finalGameState, winner)
+					}
+				)
+				io.to(perdedorUsername).emit(
+					'partida_finalizada',
+					{
+						ganador: ganadorUsername,
+						elo: result.perdidos,
+						estadoFinal: Game.cleanGameStateForPlayer(finalGameState, !winner)
+					}
+				)
+			}
+			return res.sendStatus(200)
+		}
+
 
 		if (io) {
 			const turnUsername = finalGameState.ownerTurn ? game.owner_username : game.guest_username

@@ -28,7 +28,7 @@ class Game {
 		if (
 			requestedMove.type === "boost" &&
 			(typeof requestedMove.boostType !== 'string' ||
-			![...BOOST_NAMES, "None"].includes(requestedMove.boostType))
+			![...BOOST_NAMES].includes(requestedMove.boostType))
 		) {
 			return null
 		}
@@ -101,6 +101,7 @@ class Game {
 			gameState.gameSettings.five_count
 		]
 
+		let boatIdCounter = 0; //NUEVO
 		for (const boat of boats) {
 			if (boat.size < 2 || boat.size > 5 || expectedBoats[boat.size-2] <= 0) {
 				return null
@@ -114,18 +115,21 @@ class Game {
 			) {
 				return null
 			}
+
+			const bId = "barco_" + boatIdCounter++; //NUEVO
+
 			if (boat.orientacion === "H") {
 				if (boat.c < 0 || boat.c+boat.size > targetBoard[boat.f].length) {
 					return null // Out of bounds
 				}
 				for (let i = 0; i < boat.size; i++) {
-					if (targetBoard[boat.f][boat.c + i] === "barco") {
+					if (targetBoard[boat.f][boat.c + i].includes("barco")) {
 						return null
 					}
 					if (BOOST_NAMES.includes(targetBoard[boat.f][boat.c + i])) {
 						targetInventory[targetBoard[boat.f][boat.c + i]]++
 					}
-					targetBoard[boat.f][boat.c + i] = "barco"
+					targetBoard[boat.f][boat.c + i] = bId; //NUEVO
 				}
 			}
 			else if (boat.orientacion === "V") {
@@ -133,13 +137,13 @@ class Game {
 					return null // Out of bounds
 				}
 				for (let i = 0; i < boat.size; i++) {
-					if (targetBoard[boat.f + i][boat.c] === "barco") {
+					if (targetBoard[boat.f + i][boat.c].includes("barco")) {
 						return null // Solapamiento de barcos
 					}
 					if (BOOST_NAMES.includes(targetBoard[boat.f + i][boat.c])) {
 						targetInventory[targetBoard[boat.f + i][boat.c]]++
 					}
-					targetBoard[boat.f + i][boat.c] = "barco"
+					targetBoard[boat.f + i][boat.c] = bId; //NUEVO
 				}
 			}
 			else {

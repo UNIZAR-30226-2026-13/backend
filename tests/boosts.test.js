@@ -7,12 +7,8 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         gameState = {
             ownerTurn: true,
             turnStreak: 1,
-            gameSettings: {
-                board_size: 10,
-                boost_ratio: 0.1
-            },
-            ownerInventory: { deflagrador: 1, doble: 1, tor: 1, esc: 1, rad: 1, mine: 1 },
-            guestInventory: { deflagrador: 0, doble: 0, tor: 0, esc: 0, rad: 0, mine: 0 },
+            ownerInventory: { deflagrador: 1, doble: 1, tornado: 1, escudo: 1, radar: 1, mina: 1 },
+            guestInventory: { deflagrador: 0, doble: 0, tornado: 0, escudo: 0, radar: 0, mina: 0 },
             ownerBoard: Array(10).fill(null).map(() => Array(10).fill('agua')),
             guestBoard: Array(10).fill(null).map(() => Array(10).fill('agua'))
         };
@@ -47,7 +43,7 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         const move = { f: 2, c: 2 }; // Centro del primer cuadrante
         const newState = Boosts.tornado(gameState, move);
 
-        expect(newState.ownerInventory.tor).toBe(0);
+        expect(newState.ownerInventory.tornado).toBe(0);
         let impactos = 0;
         for(let i=0; i<5; i++) {
             for(let j=0; j<5; j++) {
@@ -64,11 +60,10 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
     test('ESCUDO: Debe proteger una casilla propia', () => {
         gameState.ownerBoard[0][0] = 'barco';
         const move = { f: 0, c: 0 };
-        
         const newState = Boosts.escudo(gameState, move);
 
         expect(newState.ownerBoard[0][0]).toBe('escudo(barco)');
-        expect(newState.ownerInventory.esc).toBe(0);
+        expect(newState.ownerInventory.escudo).toBe(0);
     });
 
     test('MINA: Al golpear una mina, debe desaparecer del tablero', () => {
@@ -91,18 +86,17 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         const newState = Boosts.radar(gameState, move);
 
         expect(newState.lastRadarResult).toBe(2);
-        expect(newState.ownerInventory.rad).toBe(0); // Gasta inventario
+        expect(newState.ownerInventory.radar).toBe(0); // Gasta inventario
     });
 
     test('SEGURIDAD: No debe permitir usar un boost si el inventario es 0', () => {
         // Intentamos usar un boost que el invitado no tiene
         gameState.ownerTurn = false;
         const move = { f: 1, c: 1 };
-        
         const newState = Boosts.tornado(gameState, move);
 
         // El estado debe devolverse intacto
         expect(newState.guestInventory.deflagrador).toBe(0);
-        expect(newState).toEqual(gameState); 
+        expect(newState).toEqual(gameState);
     });
 });

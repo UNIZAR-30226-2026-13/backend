@@ -47,17 +47,49 @@ app.get('/', (req, res) => {
 })
 
 app.get('/db-setup', async (req, res) => {
-	try {
-		const result = await pool.query('SELECT * FROM usuarios;')
-		res.status(200).send({
-			message: 'Conexión a la base de datos exitosa',
-			tables: result.rows
-		})
-	} catch (err) {
-		console.error('Error al conectar a la base de datos:', err)
-		res.status(500).json({ error: 'Error al conectar a la base de datos' })
-	}
-})
+    try {
+        await pool.query(`
+CREATE TABLE IF NOT EXISTS usuarios (
+	id uuid UNIQUE PRIMARY KEY,
+	username VARCHAR(255) NOT NULL UNIQUE,
+	email VARCHAR(255) NOT NULL UNIQUE,
+	password VARCHAR(255) NOT NULL,
+	barco TEXT NOT NULL DEFAULT 'default',
+	perfil TEXT NOT NULL DEFAULT 'default',
+	tablero TEXT NOT NULL DEFAULT 'default',
+	elo INTEGER NOT NULL DEFAULT 1000,
+	partidas_jugadas INTEGER NOT NULL CHECK (partidas_jugadas >= 0) DEFAULT 0,
+	partidas_ganadas INTEGER NOT NULL CHECK (partidas_ganadas >= 0) DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS partidas (
+	id TEXT PRIMARY KEY NOT NULL,
+	estado JSONB,
+	owner_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	guest_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	ranked BOOLEAN NOT NULL DEFAULT FALSE,
+	fecha_ultimo_movimiento TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	activa BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS historial_partidas (
+	id TEXT PRIMARY KEY NOT NULL,
+	owner_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	guest_username TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	ranked BOOLEAN NOT NULL DEFAULT FALSE,
+	ganador_id TEXT NOT NULL REFERENCES usuarios(username) ON DELETE CASCADE,
+	fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS queue (
+    player_username VARCHAR(255) PRIMARY KEY REFERENCES usuarios(username) ON DELETE CASCADE, --- player_username VARCHAR(255) PRIMARY KEY,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);`);
+        res.status(200).send("Tablas creadas con éxito");
+    } catch (err) {
+        res.status(500).send("Error: " + err.message);
+    }
+});
 
 io.use(authenticateSocket)
 

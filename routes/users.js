@@ -3,6 +3,13 @@ const router = express.Router()
 const UsersRepository = require('../repositories/usersRepository')
 const { authenticateToken } = require('../middleware/auth')
 const { USER_CONFIG_ROUTE, USER_GET_USER_ROUTE } = require('./api')
+const { SECURE_COOKIES } = require('../config.js')
+
+router.get('/email/:email', async (req, res) => {
+	const user = await UsersRepository.findUserByEmail(req.params.email)
+	if (!user) return res.status(404).json({ message: 'No encontrado' })
+	res.status(200).json({ username: user.username })
+})
 
 router.use(authenticateToken)
 
@@ -35,5 +42,23 @@ router.put(USER_CONFIG_ROUTE, async (req, res) => {
 		res.status(453).json({ message: 'Ya existe un usuario con ese nombre de usuario o correo electrónico' })
 	}
 })
+
+router.delete('/eliminar', async (req, res) => {
+	try {
+		const result = await UsersRepository.deleteUser(req.user.username)
+		if (result === null) {
+			return res.status(404).json({message:"Usuario no encontrado"})
+		}
+		res.clearCookie('auth', {
+			httpOnly: true,
+			secure: SECURE_COOKIES ? true : false,
+			sameSite: SECURE_COOKIES ? 'None' : 'Strict'
+		})
+		return res.status(200).json({ message: 'Cuenta eliminada' })
+	} catch (error) {
+		res.status(500).json({ message: 'Error al eliminar la cuenta' })
+	}
+})
+
 
 module.exports = router

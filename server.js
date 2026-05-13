@@ -49,6 +49,7 @@ app.get('/', (req, res) => {
 app.get('/db-setup', async (req, res) => {
     try {
         await pool.query(`
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 CREATE TABLE IF NOT EXISTS usuarios (
 	id uuid UNIQUE PRIMARY KEY,
 	username VARCHAR(255) NOT NULL UNIQUE,
@@ -82,7 +83,7 @@ CREATE TABLE IF NOT EXISTS historial_partidas (
 );
 
 CREATE TABLE IF NOT EXISTS queue (
-    player_username VARCHAR(255) PRIMARY KEY REFERENCES usuarios(username) ON DELETE CASCADE, --- player_username VARCHAR(255) PRIMARY KEY,
+    player_username VARCHAR(255) PRIMARY KEY REFERENCES usuarios(username) ON DELETE CASCADE,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`);
         res.status(200).send("Tablas creadas con éxito");

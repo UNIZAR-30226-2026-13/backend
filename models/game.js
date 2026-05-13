@@ -43,7 +43,8 @@ class Game {
 
 		if (requestedMove.type === "boost") {
 			resultGameState = Boosts.applyBoost(resultGameState, requestedMove)
-			return resultGameState
+			const winner = this.checkForWinningOwner(resultGameState)
+			return {winner: winner, gameState: resultGameState}
 		}
 		else if (resultGameState.ownerTurn) {
 			const result = Board.shoot(resultGameState.guestBoard, x, y)
@@ -74,7 +75,9 @@ class Game {
 			resultGameState.turnStreak = 2
 		}
 
-		return resultGameState
+		const winner = this.checkForWinningOwner(resultGameState)
+
+		return {winner: winner, gameState: resultGameState}
 	}
 
 	static cleanStateForPlayer(gameState, owner) {
@@ -169,6 +172,16 @@ class Game {
 			tableroRival: Board.hideForOpponent(tableroRival),
 			tuTurno: owner ? gameState.ownerTurn : !gameState.ownerTurn
 		}
+	}
+
+	static checkForWinningOwner(gameState) {
+		if (Board.losingBoard(gameState.guestBoard)){
+			return true
+		}
+		if (Board.losingBoard(gameState.ownerBoard)){
+			return false
+		}
+		return null
 	}
 }
 

@@ -354,8 +354,8 @@ class Boosts {
 
 	static radar(gameState, requestedMove){
 		let resultGameState = structuredClone(gameState);
-		const x = requestedMove.f
-		const y = requestedMove.c
+		const f = requestedMove.f
+		const c = requestedMove.c
 
 
 		let targetBoard = resultGameState.ownerTurn ? resultGameState.guestBoard : resultGameState.ownerBoard;

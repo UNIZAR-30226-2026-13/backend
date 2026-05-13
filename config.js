@@ -23,7 +23,7 @@ const DEFAULT_GAME_SETTINGS = {
 	ranked : true
 };
 
-const BOOST_NAMES = process.env.BOOST_NAMES.split(" ") || ["deflagrador", "doble", "tor", "esc", "mine", "rad"]
+const BOOST_NAMES = (process.env.BOOST_NAMES ? process.env.BOOST_NAMES.split(" ") : ["deflagrador", "doble", "tor", "esc", "mine", "rad"]);
 
 module.exports = {
 	PORT: process.env.PORT || 3000,

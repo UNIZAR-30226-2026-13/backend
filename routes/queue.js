@@ -12,7 +12,9 @@ router.post('/join', async (req, res) => {
     const IDjugador = req.user.username;
     const io = req.app.get('io');
     const rankedSettings = {
-        ranked: true
+        ranked: true,
+        board_size: 10,
+        boost_ratio: 0.1
     }
 
     try {

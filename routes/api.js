@@ -9,5 +9,6 @@ module.exports = {
 	ACTIVE_GAME_ROUTE: '/partida',
 	GAME_CREATE_ROUTE: '/crear',
 	GAME_JOIN_ROUTE: '/join/:id_partida',
-	GAME_MOVE_ROUTE: '/:gameID/movimiento'
+	GAME_MOVE_ROUTE: '/:gameID/movimiento',
+	GAME_BOATS_ROUTE: '/:gameID/barcos'
 }

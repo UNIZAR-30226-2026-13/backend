@@ -2,15 +2,14 @@ const express = require('express')
 const gameRouter = express.Router()
 const { DEFAULT_GAME_SETTINGS } = require('../config')
 const GamesRepository = require('../repositories/gamesRepository')
-const { authenthicateToken } = require('../middleware/auth')
+const auth = require('../middleware/auth')
 const Game = require('../models/game')
-const { GAME_CREATE_ROUTE, GAME_JOIN_ROUTE, GAME_MOVE_ROUTE } = require('./api')
+const { GAME_CREATE_ROUTE, GAME_JOIN_ROUTE, GAME_MOVE_ROUTE, GAME_BOATS_ROUTE } = require('./api')
 
-
-gameRouter.use(authenthicateToken)
+gameRouter.use(auth.authenticateToken)
 
 gameRouter.post(GAME_CREATE_ROUTE, async (req, res) => {
-	const { username } = req.user.username
+	const username = req.user.username
 	const settings = req.body.gameSettings
 	if (!settings) {
 		res.status(400).json({message: 'No se proporcionaron ajustes de partida'})
@@ -104,3 +103,32 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 		return res.status(500).json({message: "Error en el servidor"})
 	}
 })
+
+gameRouter.post(GAME_BOATS_ROUTE, async (req, res) => {
+	const username = req.user.username
+	const gameID = req.params.gameID
+	const boats = req.body.barcos
+	try {
+		const game = await GamesRepository.getGame(gameID)
+		if (game === null) {
+			return res.status(404).json({message: "Partida no encontrada"})
+		}
+		if (![game.owner_username, game.guest_username].includes(username)) {
+			return res.status(403).json({message: "No formas parte de esta partida"})
+		}
+		const isOwner = username === game.owner_username
+		const newGameState = Game.placeBoats(game.estado, boats, isOwner)
+		if (newGameState === null) {
+			return res.status(400).json({message: "Disposición de barcos mal formada o ilegal"})
+		}
+		const finalGameState = await GamesRepository.updateGameState(gameID, newGameState)
+		if (finalGameState === null) {
+			return res.status(404).json({message: "Partida no encontrada"})
+		}
+		return res.status(200).json(Game.cleanStateForPlayer(finalGameState, isOwner))
+	} catch (error) {
+		return res.status(500).json({message: "Error en el servidor"})
+	}
+})
+
+module.exports = gameRouter

@@ -2,13 +2,20 @@ const express = require('express')
 const cookieParser = require('cookie-parser')
 const pool = require('./db')
 const { PORT } = require('./config.js')
-const { API_ROUTE, USER_ROUTE } = require('./routes/api.js')
+const { API_ROUTE, USER_ROUTE, ACTIVE_GAME_ROUTE } = require('./routes/api.js')
 const authRoutes = require('./routes/auth')
 const usersRoutes = require('./routes/users')
 const queueRoutes = require('./routes/queue')
 const historyRoutes = require('./routes/history')
+const activeGameRoutes = require('./routes/activeGame')
 const { authenticateSocket } = require('./middleware/auth')
+const cors = require('cors');
 const app = express()
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 
 const http = require('http') // Necesario para Socket.io
 const { Server } = require('socket.io') // Socket.io
@@ -17,8 +24,9 @@ const { Server } = require('socket.io') // Socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Cambiar por URL de Vercel
-        methods: ["GET", "POST"]
+        origin: "http://localhost:5173", // La URL exacta de tu Frontend
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true // Permite recibir las cookies de sesión
     }
 });
 app.set('io', io)
@@ -32,6 +40,7 @@ app.use(API_ROUTE+USER_ROUTE, authRoutes)
 app.use(API_ROUTE+USER_ROUTE, usersRoutes)
 app.use('/api/queue', queueRoutes)
 app.use(API_ROUTE + '/terminadas', historyRoutes)
+app.use(API_ROUTE+ACTIVE_GAME_ROUTE, activeGameRoutes)
 
 app.get('/', (req, res) => {
 	res.status(200).send('Hunde la flota Backend API running')

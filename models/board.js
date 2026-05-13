@@ -1,3 +1,4 @@
+const { BOOST_NAMES } = require("./boosts")
 
 
 class BoardModel {
@@ -15,119 +16,127 @@ class BoardModel {
 	}
 
 	static shoot(board, x, y) {
-		const newBoard = board.map(row => [...row])
-		const hitInfo = null
-		switch (newBoard[x][y]) {
-			case "agua":
-				newBoard[x][y] = "nada"
-				hitInfo = "agua"
-				break
-			case "barco":
-				newBoard[x][y] = "tocado"
-				this.checkForSunk(newBoard, x, y)
-				hitInfo = "barco"
-				break
-			case "escudo(barco)":
-				newBoard[x][y] = "escudoRoto(barco)"
-				hitInfo = "escudo"
-				break
-			case "escudo(agua)":
-				newBoard[x][y] = "escudoRoto(agua)"
-				hitInfo = "escudo"
-				break
-			case "minaActiva":
-				newBoard[x][y] = "minaDetonada"
-				hitInfo = "mina"
-				break
-			default:
-				// Caso en el que le de a un boost escondido para recoger.
-				// Dejamos el tablero igual para poder saber el boost a recoger.
-				hitInfo = "boost"
-		}
-		return {board: newBoard, info: hitInfo}
-	}
+        let newBoard = board.map(row => [...row])
+        let hitInfo = null
+        let cell = newBoard[x][y];
+
+        // 1. Si golpeamos un barco con matrícula (ej. "barco_2")
+        if (typeof cell === 'string' && cell.startsWith("barco")) {
+            newBoard[x][y] = cell.replace("barco", "tocado"); // Lo convertimos en "tocado_2"
+            this.checkForSunk(newBoard, x, y);
+            hitInfo = "barco";
+            return {board: newBoard, info: hitInfo};
+        }
+
+        // 2. Si golpeamos cualquier otra cosa
+        switch (cell) {
+            case "agua":
+                newBoard[x][y] = "nada"
+                hitInfo = "agua"
+                break
+            case "minaActiva":
+                newBoard[x][y] = "minaDetonada"
+                hitInfo = "mina"
+                break
+            case "escudo(barco)":
+                newBoard[x][y] = "escudoRoto(barco)"
+                hitInfo = "escudo"
+                break
+            case "escudo(agua)":
+                newBoard[x][y] = "escudoRoto(agua)"
+                hitInfo = "escudo"
+                break
+            default:
+                hitInfo = "boost"
+        }
+        return {board: newBoard, info: hitInfo}
+    }
 
 	static checkForSunk(board, x, y) {
 		const newBoard = board.map(row => [...row])
-		let min
-		let max
-		const size = newBoard.length
-		let minWater = false
-		let maxWater = false
-		if (x > 0 && newBoard[x-1][y] == "tocado" || x < size-1 && newBoard[x+1][y] == "tocado") {
-			min = x
-			max = x
-			for (; min > 0 && newBoard[min-1][y] == "tocado"; min--);
-			minWater = (min == 0 || newBoard[min-1][y] == "agua")
-			for (; max < size-1 && newBoard[max+1][y] == "tocado"; max++);
-			maxWater = (max == size-1 || newBoard[max+1][y] == "agua")
-			if (minWater && maxWater) {
-				for (let i = min; i <= max; i++) {
-					newBoard[i][y] = "hundido"
-				}
-			}
-		}
-		if (y > 0 && newBoard[x][y-1] == "tocado" || y < size-1 && newBoard[x][y+1] == "tocado") {
-			min = y
-			max = y
-			for (; min > 0 && newBoard[x][min-1] == "tocado"; min--);
-			minWater = (min == 0 || newBoard[x][min-1] == "agua")
-			for (; max < size-1 && newBoard[x][max+1] == "tocado"; max++);
-			maxWater = (max == size-1 || newBoard[x][max+1] == "agua")
-			if (minWater && maxWater) {
-				for (let i = min; i <= max; i++) {
-					newBoard[x][i] = "hundido"
-				}
-			}
-		}
-		return newBoard
-	}
+		const size = newBoard.length;
+        const targetTocado = newBoard[startX][startY];
+
+        if (!targetTocado.startsWith("tocado")) return newBoard;
+
+        const targetBarco = targetTocado.replace("tocado", "barco");
+        let tieneBarcoSano = false;
+        const celdasTocado = [];
+
+        // Escaneamos el tablero buscando si queda alguna parte de ESTE barco específico
+        for (let r = 0; r < size; r++) {
+            for (let c = 0; c < size; c++) {
+                if (newBoard[r][c] === targetBarco) tieneBarcoSano = true;
+                if (newBoard[r][c] === targetTocado) celdasTocado.push({r, c});
+            }
+        }
+
+        // Si no queda barco sano de esta matrícula, hundimos todas sus partes
+        if (!tieneBarcoSano) {
+            for (const celda of celdasTocado) {
+                newBoard[celda.r][celda.c] = "hundido";
+            }
+        }
+        return newBoard;
+    }
 
 	static hideForSelf(board) {
-		const hiddenBoard = structuredClone(board)
-		for (let x = 0; x < hiddenBoard.length; x++) {
-			for (let y = 0; y < hiddenBoard[x].length; y++) {
-				switch (hiddenBoard[x][y]) {
-					case "barco":
-					case "nada":
-					case "tocado":
-					case "hundido":
-					case "escudo(agua)":
-					case "escudo(barco)":
-					case "escudoRoto(agua)":
-					case "escudoRoto(barco)":
-					case "minaActiva":
-					case "minaDetonada":
-						break
-					default:
-						hiddenBoard[x][y] = "agua"
-				}
-			}
-		}
-		return hiddenBoard
-	}
+        const hiddenBoard = structuredClone(board)
+        for (let x = 0; x < hiddenBoard.length; x++) {
+            for (let y = 0; y < hiddenBoard[x].length; y++) {
+                let cell = hiddenBoard[x][y];
+                if (cell.startsWith("barco") || cell.startsWith("tocado") ||
+                    ["nada", "hundido", "escudo(agua)", "escudo(barco)", "escudoRoto(agua)", "escudoRoto(barco)", "minaActiva", "minaDetonada"].includes(cell)) {
+                    continue; // Mantenemos nuestra información visible
+                } else {
+                    hiddenBoard[x][y] = "agua";
+                }
+            }
+        }
+        return hiddenBoard
+    }
 
 	static hideForOpponent(board){
-		const hiddenBoard = structuredClone(board)
-		for (let x = 0; x < hiddenBoard.length; x++) {
-			for (let y = 0; y < hiddenBoard[x].length; y++) {
-				switch (hiddenBoard[x][y]) {
-					case "nada":
-					case "tocado":
-					case "hundido":
-					case "minaDetonada":
-						break
-					case "escudoRoto(agua)":
-					case "escudoRoto(barco)":
-						hiddenBoard[x][y] = "escudoRoto"
-						break
-					default:
-						hiddenBoard[x][y] = "agua"
+        const hiddenBoard = structuredClone(board)
+        for (let x = 0; x < hiddenBoard.length; x++) {
+            for (let y = 0; y < hiddenBoard[x].length; y++) {
+                let cell = hiddenBoard[x][y];
+                if (cell.startsWith("tocado") || ["nada", "hundido", "minaDetonada"].includes(cell)) {
+                    continue; // Mantenemos visible lo que ya ha descubierto
+                } else if (cell === "escudoRoto(agua)" || cell === "escudoRoto(barco)") {
+                    hiddenBoard[x][y] = "escudoRoto";
+                } else {
+                    hiddenBoard[x][y] = "agua"; // Ocultamos TODO lo demás
+                }
+            }
+        }
+        return hiddenBoard
+    }
+
+	static placeMine(board, x, y){
+		const newBoard = board.map(row => [...row])
+
+		switch (newBoard[x][y]) {
+			case "barco":
+			case "tocado":
+			case "hundido":
+			case "nada":
+			case "minaDetonada":
+			case "escudoRoto(barco)":
+			case "escudoRoto(agua)":
+			case "minaActiva":
+				return null
+				break
+			default:
+				let boost = null
+				if (BOOST_NAMES.includes(newBoard[x][y])) {
+					boost = newBoard[x][y]
 				}
-			}
+				newBoard[x][y] = "minaActiva"
+				return { board:newBoard, boost:boost }
 		}
-		return hiddenBoard
 	}
+
 }
 
-module.exports = BoardModel;
+module.exports = { Board: BoardModel };

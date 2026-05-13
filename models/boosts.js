@@ -25,7 +25,7 @@ class Boosts {
 
 	static grabBoost(gameState, x, y) {
 		const resultGameState = structuredClone(gameState)
-		const grabbedBoost = null
+		let grabbedBoost = null
 		if (resultGameState.ownerTurn) {
 			if (resultGameState.guestBoard[x][y] in resultGameState.ownerInventory) {
 				resultGameState.ownerInventory[resultGameState.guestBoard[x][y]]++
@@ -37,13 +37,14 @@ class Boosts {
 			if (resultGameState.ownerBoard[x][y] in resultGameState.guestInventory) {
 				resultGameState.guestInventory[resultGameState.ownerBoard[x][y]]++
 				grabbedBoost = resultGameState.ownerBoard[x][y]
-				resultGameState.guestInventory[x][y] = "nada"
+				resultGameState.ownerBoard[x][y] = "nada"
 			}
 		}
 		if (grabbedBoost != null) {
 			return resultGameState
 		}
-		return null
+		// Devolver siempre algo
+		return resultGameState
 	}
 
 	static applyBoost(gameState, requestedMove) {
@@ -51,107 +52,75 @@ class Boosts {
 		let resultGameState = structuredClone(gameState)
 		switch (requestedMove.boostType) {
 			case "deflagrador":
-				resultGameState = deflagrador(gameState, requestedMove)
+				resultGameState = this.deflagrador(gameState, requestedMove)
 				break
 			case "doble":
-				resultGameState = doble(gameState, requestedMove)
+				resultGameState = this.doble(gameState, requestedMove)
 				break
-			case "tornado":
-				resultGameState = tornado(gameState, requestedMove)
+			case "tor":
+				resultGameState = this.tornado(gameState, requestedMove)
 				break
-			case "escudo":
-				resultGameState = escudo(gameState, requestedMove)
+			case "esc":
+				resultGameState = this.escudo(gameState, requestedMove)
 				break
-			case "mina":
-				resultGameState = mina(gameState, requestedMove)
+			case "mine":
+				resultGameState = this.mina(gameState, requestedMove)
 				break
-			case "radar":
-				resultGameState = radar(gameState, requestedMove)
+			case "rad":
+				resultGameState = this.radar(gameState, requestedMove)
 				break
 
 		}
 		return resultGameState
 	}
 
-	static deflagrador(gameState, requestedMove){
-		let resultGameState = structuredClone(gameState)
-		let targetBoard = (
-			resultGameState.ownerTurn
-			? resultGameState.guestBoard
-			: resultGameState.ownerBoard
-		)
-		const x = requestedMove.f
-		const y = requestedMove.c
-		if (
-			x <= 0
-			|| y <= 0
-			|| x >= targetBoard[y].length-1
-			|| y >= targetBoard.length-1
-		) {
-			return null
-		}
-		let result
-		let mina = false
-		result = Board.shoot(targetBoard, x, y)
-		targetBoard = result.board
-		if (result.info === "boost") {
-			resultGameState = this.grabBoost(resultGameState, x, y)
-		}
-		if (result.info === "mina") {
-			mina = true
-		}
-		targetBoard = Board.checkForSunk(targetBoard, x, y)
+	static deflagrador(gameState, requestedMove) {
+		let resultGameState = structuredClone(gameState);
+		const { f, c } = requestedMove;
+		const shooterInventory = resultGameState.ownerTurn ? resultGameState.ownerInventory : resultGameState.guestInventory;
 
-		result = Board.shoot(targetBoard, x-1, y)
-		targetBoard = result.board
-		if (result.info === "boost") {
-			resultGameState = this.grabBoost(resultGameState, x-1, y)
-		}
-		if (result.info === "mina") {
-			mina = true
-		}
-		targetBoard = Board.checkForSunk(targetBoard, x-1, y)
+		if (shooterInventory['deflagrador'] <= 0) return resultGameState;
+		shooterInventory['deflagrador']--;
 
-		result = Board.shoot(targetBoard, x+1, y)
-		targetBoard = result.board
-		if (result.info === "boost") {
-			resultGameState = this.grabBoost(resultGameState, x+1, y)
-		}
-		if (result.info === "mina") {
-			mina = true
-		}
-		targetBoard = Board.checkForSunk(targetBoard, x+1, y)
+		let targetBoard = resultGameState.ownerTurn ? resultGameState.guestBoard : resultGameState.ownerBoard;
+		const size = resultGameState.gameSettings.board_size;
 
-		result = Board.shoot(targetBoard, x, y-1)
-		targetBoard = result.board
-		if (result.info === "boost") {
-			resultGameState = this.grabBoost(resultGameState, x, y-1)
-		}
-		if (result.info === "mina") {
-			mina = true
-		}
-		targetBoard = Board.checkForSunk(targetBoard, x, y-1)
+		// Coordenadas en cruz
+		const coords = [
+		    { x: f, y: c },
+		    { x: f - 1, y: c },
+		    { x: f + 1, y: c },
+		    { x: f, y: c - 1 },
+		    { x: f, y: c + 1 }
+		];
 
-		result = Board.shoot(targetBoard, x, y+1)
-		targetBoard = result.board
-		if (result.info === "boost") {
-			resultGameState = this.grabBoost(resultGameState, x, y+1)
-		}
-		if (result.info === "mina") {
-			mina = true
-		}
-		targetBoard = Board.checkForSunk(targetBoard, x, y+1)
+		let minaDetectada = false;
 
-		resultGameState.ownerTurn = !resultGameState.ownerTurn
-		resultGameState.turnStreak = 1
+		coords.forEach(coord => {
+		    if (coord.x >= 0 && coord.x < size && coord.y >= 0 && coord.y < size) {
+				const res = Board.shoot(targetBoard, coord.x, coord.y);
+				targetBoard = res.board;
+				
+				if (res.info === "boost") {
+				    resultGameState = this.grabBoost(resultGameState, coord.x, coord.y);
+					targetBoard[coord.x][coord.y] = "nada";
+				}
+				if (res.info === "mina") {
+				    minaDetectada = true;
+				}
+				// Si res.info === "mina", Game.move se encargará de gestionar el castigo de turnos
+				targetBoard = Board.checkForSunk(targetBoard, coord.x, coord.y);
+		    }
+		});
 
-		if (mina) {
-			// Al golpear mina le damos al siguiente jugador dos turnos
-			resultGameState.turnStreak = 2
-		}
+		if (resultGameState.ownerTurn) resultGameState.guestBoard = targetBoard;
+		else resultGameState.ownerBoard = targetBoard;
 
-		return resultGameState
-	}
+		// El deflagrador consume el turno
+		resultGameState.ownerTurn = !resultGameState.ownerTurn;
+		resultGameState.turnStreak = 1;
+		return resultGameState;
+    }
 
 	static doble(gameState, requestedMove){
 		const resultGameState = structuredClone(gameState);
@@ -165,7 +134,7 @@ class Boosts {
 	}
 
 	static tornado(gameState, requestedMove) {
-		const { x, y } = requestedMove;
+		const { f, c } = requestedMove;
 		let resultGameState = structuredClone(gameState);
 		const shooterInventory = resultGameState.ownerTurn ? resultGameState.ownerInventory : resultGameState.guestInventory;
 
@@ -177,10 +146,10 @@ class Boosts {
 		const mitad = Math.floor(tam / 2);
 
 		// Definir límites del cuadrante
-		const filaMin = x < mitad ? 0 : mitad;
-		const filaMax = x < mitad ? mitad : tam;
-		const colMin = y < mitad ? 0 : mitad;
-		const colMax = y < mitad ? mitad : tam;
+		const filaMin = f < mitad ? 0 : mitad;
+		const filaMax = f < mitad ? mitad : tam;
+		const colMin = c < mitad ? 0 : mitad;
+		const colMax = c < mitad ? mitad : tam;
 
 		// Recoger todas las celdas del cuadrante
 		let celdasCuadrante = [];
@@ -198,7 +167,10 @@ class Boosts {
 
 			const result = Board.shoot(targetBoard, tx, ty);
 			targetBoard = result.board;
-			if (result.info === "boost") resultGameState = Boosts.grabBoost(resultGameState, x, y);
+			if (result.info === "boost") {
+				resultGameState = Boosts.grabBoost(resultGameState, tx, ty);
+				targetBoard = resultGameState.ownerTurn ? resultGameState.guestBoard : resultGameState.ownerBoard;
+			}
 			targetBoard = Board.checkForSunk(targetBoard, tx, ty);
 		}
 
@@ -210,7 +182,7 @@ class Boosts {
 	}
 
 	static escudo(gameState, requestedMove){
-		const { x, y } = requestedMove;
+		const { f, c } = requestedMove;
 		let resultGameState = structuredClone(gameState);
 
 		const shooterInventory = resultGameState.ownerTurn ? resultGameState.ownerInventory : resultGameState.guestInventory;
@@ -219,11 +191,11 @@ class Boosts {
 
 		let myBoard = resultGameState.ownerTurn ? resultGameState.ownerBoard : resultGameState.guestBoard;
 
-		if (myBoard[x][y] === "barco") {
-			myBoard[x][y] = "escudo(barco)";
+		if (myBoard[f][c] === "barco") {
+			myBoard[f][c] = "escudo(barco)";
 			shooterInventory['esc']--;
-		} else if (myBoard[x][y] === "agua") {
-			myBoard[x][y] = "escudo(agua)";
+		} else if (myBoard[f][c] === "agua") {
+			myBoard[f][c] = "escudo(agua)";
 			shooterInventory['esc']--;
 		}
 
@@ -231,14 +203,31 @@ class Boosts {
 		return resultGameState;
 	}
 
-	static mina(gameState, requestedMove){
-		const resultGameState = structuredClone(gameState)
-		//	TODO
+	static mina(gameState, requestedMove) {
+		const resultGameState = structuredClone(gameState);
+		const { f, c } = requestedMove;
+		const shooterInventory = resultGameState.ownerTurn ? resultGameState.ownerInventory : resultGameState.guestInventory;
+
+		if (shooterInventory['mine'] <= 0) return resultGameState;
+
+		let myBoard = resultGameState.ownerTurn ? resultGameState.ownerBoard : resultGameState.guestBoard;
+		
+		// Solo se puede poner mina en agua
+		if (myBoard[f][c] === "agua") {
+			myBoard[f][c] = "minaActiva";
+			shooterInventory['mine']--;
+		}
+
+		// Poner una mina consume el turno
+		resultGameState.ownerTurn = !resultGameState.ownerTurn;
+		resultGameState.turnStreak = 1;
+		
+		return resultGameState;
 	}
 
 	static radar(gameState, requestedMove){
 		let resultGameState = structuredClone(gameState);
-		const { x, y } = requestedMove;
+		const { f, c } = requestedMove;
 		const shooterInventory = resultGameState.ownerTurn ? resultGameState.ownerInventory : resultGameState.guestInventory;
 
 		if (shooterInventory['rad'] <= 0) return gameState;
@@ -248,10 +237,10 @@ class Boosts {
 		const tam = targetBoard.length;
 		const mitad = Math.floor(tam / 2);
 
-		const filaMin = x < mitad ? 0 : mitad;
-		const filaMax = x < mitad ? mitad : tam;
-		const colMin = y < mitad ? 0 : mitad;
-		const colMax = y < mitad ? mitad : tam;
+		const filaMin = f < mitad ? 0 : mitad;
+		const filaMax = f < mitad ? mitad : tam;
+		const colMin = c < mitad ? 0 : mitad;
+		const colMax = c < mitad ? mitad : tam;
 
 		let barcosEncontrados = 0;
 		for (let i = filaMin; i < filaMax; i++) {

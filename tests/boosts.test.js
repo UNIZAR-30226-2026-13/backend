@@ -7,6 +7,10 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         gameState = {
             ownerTurn: true,
             turnStreak: 1,
+            gameSettings: {
+                board_size: 10,
+                boost_ratio: 0.1
+            },
             ownerInventory: { deflagrador: 1, doble: 1, tor: 1, esc: 1, rad: 1, mine: 1 },
             guestInventory: { deflagrador: 0, doble: 0, tor: 0, esc: 0, rad: 0, mine: 0 },
             ownerBoard: Array(10).fill(null).map(() => Array(10).fill('agua')),
@@ -16,6 +20,13 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
     });
 
     test('DEFLAGRADOR: Debe impactar en cruz y gastar munición', () => {
+        const move = { f: 5, c: 5 }; // Impacto directo en el barco
+        const newState = Boosts.deflagrador(gameState, move);
+
+        // Verificamos que la casilla central ahora es un impacto (tocado/hundido)
+        expect(newState.guestBoard[5][5]).not.toBe('barco');
+        expect(newState.ownerInventory.deflagrador).toBe(0);
+        expect(newState.ownerTurn).toBe(false);
     });
 
     test('DOBLE: Debe permitir repetir turno', () => {
@@ -33,7 +44,7 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
             }
         }
 
-        const move = { x: 2, y: 2 }; // Centro del primer cuadrante
+        const move = { f: 2, c: 2 }; // Centro del primer cuadrante
         const newState = Boosts.tornado(gameState, move);
 
         expect(newState.ownerInventory.tor).toBe(0);
@@ -52,7 +63,7 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
 
     test('ESCUDO: Debe proteger una casilla propia', () => {
         gameState.ownerBoard[0][0] = 'barco';
-        const move = { x: 0, y: 0 };
+        const move = { f: 0, c: 0 };
         
         const newState = Boosts.escudo(gameState, move);
 
@@ -60,7 +71,15 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         expect(newState.ownerInventory.esc).toBe(0);
     });
 
-    test('MINA: Al golpear una mina, el rival debe obtener turnStreak = 2', () => {
+    test('MINA: Al golpear una mina, debe desaparecer del tablero', () => {
+        // El invitado coloca una mina en (3,3)
+        gameState.guestBoard[3][3] = 'minaActiva';
+
+        const move = { f: 3, c: 3 };
+        const newState = Boosts.deflagrador(gameState, move);
+
+        expect(newState.ownerTurn).toBe(false);
+        expect(newState.guestBoard[3][3]).not.toBe('minaActiva');
     });
 
     test('RADAR: Debe contar correctamente los barcos en un cuadrante', () => {
@@ -68,7 +87,7 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
         gameState.guestBoard[1][1] = 'barco';
         gameState.guestBoard[2][2] = 'barco';
 
-        const move = { x: 0, y: 0 }; // Apuntamos al cuadrante 1
+        const move = { f: 0, c: 0 }; // Apuntamos al cuadrante 1
         const newState = Boosts.radar(gameState, move);
 
         expect(newState.lastRadarResult).toBe(2);
@@ -78,7 +97,7 @@ describe('Pruebas de Lógica de Power-Ups (Backend)', () => {
     test('SEGURIDAD: No debe permitir usar un boost si el inventario es 0', () => {
         // Intentamos usar un boost que el invitado no tiene
         gameState.ownerTurn = false;
-        const move = { x: 1, y: 1 };
+        const move = { f: 1, c: 1 };
         
         const newState = Boosts.tornado(gameState, move);
 

@@ -9,7 +9,13 @@ const queueRoutes = require('./routes/queue')
 const historyRoutes = require('./routes/history')
 const activeGameRoutes = require('./routes/activeGame')
 const { authenticateSocket } = require('./middleware/auth')
+const cors = require('cors');
 const app = express()
+
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+}));
 
 const http = require('http') // Necesario para Socket.io
 const { Server } = require('socket.io') // Socket.io
@@ -18,8 +24,9 @@ const { Server } = require('socket.io') // Socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*", // Cambiar por URL de Vercel
-        methods: ["GET", "POST"]
+        origin: "http://localhost:5173", // La URL exacta de tu Frontend
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true // Permite recibir las cookies de sesión
     }
 });
 app.set('io', io)

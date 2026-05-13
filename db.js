@@ -9,7 +9,11 @@ const pool = new Pool({
 	password: DB_PASSWORD,
 	host: DB_HOST,
 	port: DB_PORT,
-	database: DB_NAME
+	database: DB_NAME,
+	connectionString: process.env.DATABASE_URL,
+	ssl: {
+		rejectUnauthorized: false // Railway
+    }
 });
 
 module.exports = pool

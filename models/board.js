@@ -1,4 +1,4 @@
-const { BOOST_NAMES } = require("./boosts")
+const { BOOST_NAMES } = require('../config')
 
 
 class BoardModel {

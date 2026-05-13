@@ -4,6 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "test": "NODE_ENV=test DB_HOST=localhost jest --watchAll",
     "dev": "node server.js",
     "docker:build": "docker build . --file docker/Dockerfile",

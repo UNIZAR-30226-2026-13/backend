@@ -23,7 +23,7 @@ const DEFAULT_GAME_SETTINGS = {
 	ranked : true
 };
 
-const BOOST_NAMES = process.env.BOOST_NAMES.split(" ") || ["deflagrador", "doble", "tor", "esc", "mine", "rad"]
+const BOOST_NAMES = (process.env.BOOST_NAMES ? process.env.BOOST_NAMES.split(" ") : ["deflagrador", "doble", "tor", "esc", "mine", "rad"]);
 
 module.exports = {
 	PORT: process.env.PORT || 3000,
@@ -35,5 +35,6 @@ module.exports = {
 	JWT_SECRET: process.env.JWT_SECRET,
 	SECURE_COOKIES: process.env.SECURE_COOKIES,
 	DEFAULT_GAME_SETTINGS: DEFAULT_GAME_SETTINGS,
-	BOOST_NAMES: BOOST_NAMES
+	BOOST_NAMES: BOOST_NAMES,
+	FRONTEND_URL: process.env.FRONTEND_URL || "https://frontend-lime-chi-56.vercel.app/"
 };

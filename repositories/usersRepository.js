@@ -72,8 +72,8 @@ class UsersRepository {
 
 		const updatedUser = { ...user, ...newData }
 		const query = `
-			UPDATE usuarios 
-			SET username = $1, email = $2, password = $3, barco = $4, perfil = $5 
+			UPDATE usuarios
+			SET username = $1, email = $2, password = $3, barco = $4, perfil = $5
 			WHERE id = $6`;
 		const values = [updatedUser.username,updatedUser.email,updatedUser.password,updatedUser.barco,updatedUser.perfil,id];
 		try {
@@ -88,6 +88,15 @@ class UsersRepository {
 			console.error('Error al actualizar usuario:', err)
 			throw err
 		}
+	}
+
+	async deleteUser(username) {
+		const query = 'DELETE FROM usuarios WHERE username = $1'
+		const result = await pool.query(query, [username])
+		if (result.rowCount !== 0) {
+			return true
+		}
+		return null
 	}
 
 

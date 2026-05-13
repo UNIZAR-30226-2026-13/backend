@@ -32,7 +32,8 @@ class GamesRepository {
 			if (result.rowCount !== 0) {
 				return {
 					ownerUsername: result.rows[0].owner_username,
-					gameSettings: result.rows[0].estado.gameSettings
+					gameSettings: result.rows[0].estado.gameSettings,
+					estado: result.rows[0].estado
 				}
 			}
 			else {
@@ -202,7 +203,7 @@ class GamesRepository {
 	}
 
 	static async updateGameState(partidaID, newGameState) {
-		const query = 'UPDATE partidas SET estado = $1 WHERE id = $2'
+		const query = 'UPDATE partidas SET estado = $1 WHERE id = $2 AND activa = true'
 		const values = [newGameState, partidaID]
 		try {
 			const result = await pool.query(query, values)
@@ -215,6 +216,37 @@ class GamesRepository {
 			throw error
 		}
 	}
+
+	static async pausarPartida(partidaID) {
+		const query = 'UPDATE partidas SET activa = false WHERE id = $1'
+		const values = [partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount !== 0) {
+				return true
+			}
+			return null
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
+	static async reanudarPartida(partidaID) {
+		const query = 'UPDATE partidas SET activa = true WHERE id = $1 RETURNING *'
+		const values = [partidaID]
+		try {
+			const result = await pool.query(query, values)
+			if (result.rowCount !== 0) {
+				return result.rows[0]
+			}
+			return null
+		} catch (error) {
+			console.error('Error en la base de datos: ', error);
+			throw error
+		}
+	}
+
 }
 
 module.exports = GamesRepository

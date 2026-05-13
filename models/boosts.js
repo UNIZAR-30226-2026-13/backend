@@ -230,10 +230,10 @@ class Boosts {
 		const mitad = Math.floor(tam / 2);
 
 		// Definir límites del cuadrante
-		const filaMin = f < mitad ? 0 : mitad;
-		const filaMax = f < mitad ? mitad : tam;
-		const colMin = c < mitad ? 0 : mitad;
-		const colMax = c < mitad ? mitad : tam;
+		const filaMin = x < mitad ? 0 : mitad;
+		const filaMax = x < mitad ? mitad : tam;
+		const colMin = y < mitad ? 0 : mitad;
+		const colMax = y < mitad ? mitad : tam;
 
 		// Recoger todas las celdas del cuadrante
 		let celdasCuadrante = [];
@@ -362,10 +362,10 @@ class Boosts {
 		const tam = targetBoard.length;
 		const mitad = Math.floor(tam / 2);
 
-		const filaMin = f < mitad ? 0 : mitad;
-		const filaMax = f < mitad ? mitad : tam;
-		const colMin = c < mitad ? 0 : mitad;
-		const colMax = c < mitad ? mitad : tam;
+		const filaMin = x < mitad ? 0 : mitad;
+		const filaMax = x < mitad ? mitad : tam;
+		const colMin = y < mitad ? 0 : mitad;
+		const colMax = y < mitad ? mitad : tam;
 
 		let barcosEncontrados = 0;
 		for (let i = filaMin; i < filaMax; i++) {

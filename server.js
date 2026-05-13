@@ -1,7 +1,7 @@
 const express = require('express')
 const cookieParser = require('cookie-parser')
 const pool = require('./db')
-const { PORT } = require('./config.js')
+const { PORT, FRONTEND_URL } = require('./config.js')
 const { API_ROUTE, USER_ROUTE, ACTIVE_GAME_ROUTE } = require('./routes/api.js')
 const authRoutes = require('./routes/auth')
 const usersRoutes = require('./routes/users')
@@ -13,7 +13,7 @@ const cors = require('cors');
 const app = express()
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: FRONTEND_URL,
     credentials: true
 }));
 
@@ -24,7 +24,7 @@ const { Server } = require('socket.io') // Socket.io
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "http://localhost:5173", // La URL exacta de tu Frontend
+        origin: FRONTEND_URL, // La URL exacta del Frontend
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true // Permite recibir las cookies de sesión
     }

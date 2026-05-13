@@ -25,12 +25,15 @@ class GamesRepository {
 	}
 
 	static async addGuest(gameID, guestUsername) {
-		const query = 'UPDATE partidas SET guest_username = $1, activa = true WHERE id = $2 RETURNING owner_username'
+		const query = 'UPDATE partidas SET guest_username = $1, activa = true WHERE id = $2 RETURNING owner_username, estado'
 		const values = [guestUsername, gameID]
 		try {
 			const result = await pool.query(query, values)
 			if (result.rowCount !== 0) {
-				return result.rows[0].owner_username
+				return {
+					ownerUsername: result.rows[0].owner_username,
+					gameSettings: result.rows[0].estado.gameSettings
+				}
 			}
 			else {
 				return null

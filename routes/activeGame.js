@@ -44,15 +44,21 @@ gameRouter.post(GAME_JOIN_ROUTE, async (req, res) => {
 	const partidaID = req.params.id_partida
 	const io = req.app.get('io')
 	try {
-		const ownerUsername = await GamesRepository.addGuest(partidaID, username)
-		if (!ownerUsername) {
+		const result = await GamesRepository.addGuest(partidaID, username)
+		if (!result) {
 			return res.status(400).json({message: 'Partida no encontrada'})
 		}
 		else {
 			if (io) {
-				io.to(ownerUsername).emit('guest_conectado', {username:username})
+				io.to(result.ownerUsername).emit('guest_conectado', {username:username})
 			}
-			return res.status(200).json({message: 'Conexión exitosa', ownerUsername: ownerUsername})
+			return res.status(200).json(
+				{
+					message: 'Conexión exitosa',
+					ownerUsername: result.ownerUsername,
+					gameSettings: result.gameSettings
+				}
+			)
 		}
 	} catch (error) {
 		return res.status(500).json({message: "Error en el servidor"})

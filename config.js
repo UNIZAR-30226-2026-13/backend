@@ -36,5 +36,5 @@ module.exports = {
 	SECURE_COOKIES: process.env.SECURE_COOKIES,
 	DEFAULT_GAME_SETTINGS: DEFAULT_GAME_SETTINGS,
 	BOOST_NAMES: BOOST_NAMES,
-	FRONTEND_URL: process.env.FRONTEND_URL || "https://frontend-lime-chi-56.vercel.app/"
+	FRONTEND_URL: process.env.FRONTEND_URL || "https://frontend-lime-chi-56.vercel.app"
 };

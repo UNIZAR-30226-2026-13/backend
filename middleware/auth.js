@@ -17,17 +17,29 @@ exports.authenticateToken = (req, res, next) => {
 	}
 }
 
-exports.authenticateSocket = (socket, next) => {
-	const cookies = socket.handshake.headers.cookie
-	if (!cookies) return next(new Error('No auth cookie'))
+// exports.authenticateSocket = (socket, next) => {
+// 	const cookies = socket.handshake.headers.cookie
+// 	if (!cookies) return next(new Error('No auth cookie'))
 
-	const { auth: token } = cookie.parse(cookies)
-	if (!token) return next(new Error('No auth token'))
+// 	const { auth: token } = cookie.parse(cookies)
+// 	if (!token) return next(new Error('No auth token'))
+
+// 	try {
+// 		socket.data.user = jwt.verify(token, JWT_SECRET)
+// 		next()
+// 	} catch (err) {
+// 		next(new Error('Token inválido'))
+// 	}
+// }
+
+exports.authenticateSocket = (socket, next) => {
+	const token = socket.handshake.auth?.token;
+	if (!token) return next(new Error('No auth token'));
 
 	try {
-		socket.data.user = jwt.verify(token, JWT_SECRET)
-		next()
+		socket.data.user = jwt.verify(token, JWT_SECRET);
+		next();
 	} catch (err) {
-		next(new Error('Token inválido'))
+		next(new Error('Token inválido'));
 	}
-}
+};

@@ -61,15 +61,17 @@ app.get('/db-setup', async (req, res) => {
 	}
 })
 
-io.use(authenticateSocket)
+// io.use(authenticateSocket)
 
 io.on('connection', (socket) => {
     console.log('Nuevo cliente conectado:', socket.data.user.username);
 
     // El cliente se une a una sala privada con su IDjugador para recibir notificaciones
-    socket.on('join_room', () => {
-        socket.join(socket.data.user.username);
-        console.log(`Jugador ${socket.data.user.username} unido a su sala privada`);
+    socket.on('join_room', (data) => {
+        if (data && data.room) {
+            socket.join(data.room);
+            console.log(`Socket ${socket.id} joined room: ${data.room}`);
+        }
     });
 
     socket.on('disconnect', () => {

@@ -64,18 +64,19 @@ app.get('/db-setup', async (req, res) => {
 // io.use(authenticateSocket)
 
 io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado:', socket.data.user.username);
+    console.log('Nuevo cliente conectado. Socket ID:', socket.id);
 
-    // El cliente se une a una sala privada con su IDjugador para recibir notificaciones
     socket.on('join_room', (data) => {
-        if (data && data.room) {
-            socket.join(data.room);
-            console.log(`Socket ${socket.id} joined room: ${data.room}`);
+        const username = data?.room;
+        if (username) {
+            socket.join(username);
+            socket.data.username = username;  // Store username on socket
+            console.log(`${username} joined room: ${username}`);
         }
     });
 
     socket.on('disconnect', () => {
-        console.log('Cliente desconectado');
+        console.log(`Cliente desconectado:`, socket.data.username || socket.id);
     });
 });
 

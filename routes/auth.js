@@ -15,6 +15,7 @@ router.post(AUTH_REGISTER_ROUTE, async (req, res) => {
 		const token = jwt.sign(publicUser, JWT_SECRET, { expiresIn: '1h' })
 		res.status(200)
 			.cookie('auth', token, {
+				domain:'hunde-la-flota.up.railway.app',
 				httpOnly: true,
 				secure: SECURE_COOKIES ? true : false,
 				sameSite: SECURE_COOKIES ? 'None' : 'Strict',
@@ -47,6 +48,7 @@ router.post(AUTH_LOGIN_ROUTE, async (req, res) => {
 		const token = jwt.sign(publicUser, JWT_SECRET, { expiresIn: '1h' })
 		res.status(200)
 			.cookie('auth', token, {
+				domain:'hunde-la-flota.up.railway.app',
 				httpOnly: true,
 				secure: SECURE_COOKIES ? true : false,
 				sameSite: SECURE_COOKIES ? 'None' : 'Strict',
@@ -61,6 +63,7 @@ router.post(AUTH_LOGIN_ROUTE, async (req, res) => {
 
 router.post(AUTH_LOGOUT_ROUTE, (_, res) => {
 	res.clearCookie('auth', {
+				domain:'hunde-la-flota.up.railway.app',
 				httpOnly: true,
 				secure: SECURE_COOKIES ? true : false,
 				sameSite: SECURE_COOKIES ? 'None' : 'Strict'

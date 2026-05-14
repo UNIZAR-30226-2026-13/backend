@@ -33,16 +33,9 @@ exports.authenticateToken = (req, res, next) => {
 // }
 
 exports.authenticateSocket = (socket, next) => {
-	console.log('Socket handshake cookies:', socket.handshake.headers.cookie);
-	const cookies = socket.handshake.headers.cookie
-	if (!cookies) {
-		console.log('No cookies found');
-		return next(new Error('No auth cookie'));
-	}
-	const { auth: token } = cookie.parse(cookies);
-	console.log('Parsed token:', token ? 'found' : 'not found');
+	const token = socket.handshake.auth?.token;
+	console.log('Auth token from auth:', token ? 'found' : 'not found');
 	if (!token) {
-		console.log('No auth token in cookies');
 		return next(new Error('No auth token'));
 	}
 	try {

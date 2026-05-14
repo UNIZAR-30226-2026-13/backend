@@ -34,16 +34,12 @@ exports.authenticateToken = (req, res, next) => {
 
 exports.authenticateSocket = (socket, next) => {
 	const token = socket.handshake.auth?.token;
-	console.log('Auth token from auth:', token ? 'found' : 'not found');
-	if (!token) {
-		return next(new Error('No auth token'));
-	}
+	if (!token) return next(new Error('No auth token'));
+
 	try {
 		socket.data.user = jwt.verify(token, JWT_SECRET);
-		console.log('Authenticated user:', socket.data.user.username);
 		next();
 	} catch (err) {
-		console.log('Token verification failed:', err.message);
 		next(new Error('Token inválido'));
 	}
 };

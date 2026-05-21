@@ -18,10 +18,11 @@ router.post('/join', async (req, res) => {
     }
 
     try {
+        /*Mecanismo de reconexión a partida activa
         const partidaActiva = await GamesRepository.findGameByPlayer(IDjugador);
         if (partidaActiva) {
             return res.status(200).json({ status: "Encontrada", partidaID: partidaActiva });
-        }
+        }*/
 
         const oponenteID = await QueueRepository.getWaitingPlayer(IDjugador);
 

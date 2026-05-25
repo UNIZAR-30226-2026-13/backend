@@ -94,6 +94,7 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 
 		if (moveResult.winner !== null) {
 			//PARTIDA TERMINADA
+			const winner = moveResult.winner
 			const ganadorUsername = winner ? game.owner_username : game.guest_username
 			const perdedorUsername = (!winner) ? game.owner_username : game.guest_username
 			const result = await GamesRepository.consolidarPartida(gameID, ganadorUsername)
@@ -115,7 +116,7 @@ gameRouter.put(GAME_MOVE_ROUTE, async (req, res) => {
 					}
 				)
 			}
-			return res.sendStatus(200)
+			return res.status(200).json(Game.cleanStateForPlayer(finalGameState, ownerMove))
 		}
 
 

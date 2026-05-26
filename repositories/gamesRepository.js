@@ -247,6 +247,18 @@ class GamesRepository {
 		}
 	}
 
+	static async findPausedGameByPlayer(username) {
+		const query = 'SELECT * FROM partidas WHERE (owner_username = $1 OR guest_username = $1) AND activa = false'
+		const values = [username]
+		try {
+			const result = await pool.query(query, values)
+			return result.rows[0] || null
+		} catch (error) {
+			console.error('Error en la base de datos: ', error)
+			throw error
+		}
+	}
+
 }
 
 module.exports = GamesRepository

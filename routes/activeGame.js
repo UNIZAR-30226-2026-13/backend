@@ -197,25 +197,50 @@ gameRouter.put(GAME_PAUSE_ROUTE, async (req, res) => {
 gameRouter.post(GAME_UNPAUSE_ROUTE, async (req, res) => {
 	const username = req.user.username
 	const gameID = req.params.gameID
+	const io = req.app.get('io')
 	try {
 		const game = await GamesRepository.getGame(gameID)
 		if (game === null) {
 			return res.status(404).json({message: "Partida no encontrada"})
 		}
-		if (username !== game.owner_username) {
-			return res.status(403).json({message: "Esta no es tu partida"})
-		}
+		if (![game.owner_username, game.guest_username].includes(username)) {
+            return res.status(403).json({message: "No formas parte de esta partida"})
+        }
 		const result = await GamesRepository.reanudarPartida(gameID)
 		if (result !== null) {
+
+			if (io) {
+                io.to(game.owner_username).emit('partida_reanudada', {
+                    gameID: game.id,
+                    estado: Game.cleanGameStateForPlayer(result.estado, true)
+                })
+                io.to(game.guest_username).emit('partida_reanudada', {
+                    gameID: game.id,
+                    estado: Game.cleanGameStateForPlayer(result.estado, false)
+                })
+            }
+
+			const isOwner = username === game.owner_username
 			return res.status(200).json({
 				message:"Partida reanudada correctamente",
-				estado:Game.cleanGameStateForPlayer(result.estado, true)
+				estado:Game.cleanGameStateForPlayer(result.estado, isOwner)
 			})
 		}
 		return res.status(500).json({message: "Error en el servidor"})
 	} catch (error) {
 			return res.status(500).json({message: "Error en el servidor"})
 	}
+})
+
+gameRouter.get('/pausada', async (req, res) => {
+    const username = req.user.username
+    try {
+        const game = await GamesRepository.findPausedGameByPlayer(username)
+        if (game) return res.status(200).json({ gameID: game.id })
+        return res.status(200).json({ gameID: null })
+    } catch (error) {
+        return res.status(500).json({ message: 'Error en el servidor' })
+    }
 })
 
 module.exports = gameRouter
